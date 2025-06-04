@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Vehicle } from './vehicle.entity';
+import { VehicleQueryDto } from './dto/vehicle-query.dto';
 
 @Injectable()
 export class VehiclesService {
@@ -25,5 +26,21 @@ export class VehiclesService {
     });
 
     return this.vehicleRepo.save(vehicle);
+  }
+  async findAll(query: VehicleQueryDto): Promise<Vehicle[]> {
+    const take = Number(query.limit) || 10;
+    const skip = Number(query.offset) || 0;
+    const order = query.order || 'ASC';
+
+    const where: Record<string, any> = {};
+    if (query.car_make) where['car_make'] = query.car_make;
+    if (query.car_model) where['car_model'] = query.car_model;
+
+    return this.vehicleRepo.find({
+      where,
+      take,
+      skip,
+      order: { manufactured_date: order },
+    });
   }
 }
